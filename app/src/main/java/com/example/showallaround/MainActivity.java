@@ -110,60 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
                 request.executeAsync();
 
-                new GraphRequest(
-                        AccessToken.getCurrentAccessToken(),
-                        "374515670479024",
-                        null,
-                        HttpMethod.GET,
-                        new GraphRequest.Callback() {
-                            public void onCompleted(GraphResponse response) {
-                                /* handle the result */
-                                JSONObject result = response.getJSONObject();
-                                Log.i("getCurrentAccessToken", result.toString());
-                            }
-                        }
-                ).executeAsync();
             }
         }
     };
-
-    // private void loadUserProfile (AccessToken accessToken){
-//        GraphRequest request = GraphRequest.newMeRequest(newAccessToken, new GraphRequest.GraphJSONObjectCallback() {
-//            @Override
-//            public void onCompleted(JSONObject object, GraphResponse response) {
-//
-//                JSONObject graphResponse = response.getGraphObject().getInnerJSONObject();
-//                String postId = null;
-//                try {
-//                    postId = graphResponse.getString("id");
-//                } catch (JSONException e) {
-//                    Log.i("Facebook error", "JSON error " + e.getMessage());
-//                }
-//                try {
-//                    Log.d("Data",object.getString("name"));
-//                    String first_name = object.getString("first_name");
-//                    String last_name = object.getString("last_name");
-//                    String email = object.getString("email");
-//                    String id = object.getString("id");
-//                    String image_url = "https://graph.facebook.com/"+id+"/picture?type=normal";
-//
-//                    Log.d(EMAIL,object.toString());
-//                    textName.setText(first_name+" "+last_name);
-//                    textEmail.setText(email);
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-//
-//            }
-//        });
-
-
-//        Bundle parameters = new Bundle();
-//        parameters.putString("fields","first_name,last_name,email_id");
-//        request.setParameters(parameters);
-//        request.executeAsync();
-
 }
