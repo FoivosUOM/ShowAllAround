@@ -1,5 +1,7 @@
 package com.example.showallaround;
+
 import android.content.Intent;
+
 import java.util.Arrays;
 import java.util.Map;
 
@@ -22,6 +24,7 @@ import com.facebook.login.LoginManager;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.AccessToken;
+import com.facebook.HttpMethod;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private LoginButton loginButton;
     private ImageView imageView;
-    private TextView textName,textEmail;
+    private TextView textName, textEmail;
 
 
     private CallbackManager callbackManager;
@@ -50,32 +53,13 @@ public class MainActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
 
         callbackManager = CallbackManager.Factory.create();
-        loginButton.setReadPermissions(Arrays.asList(EMAIL));
 
-        Log.d("feef","df");
-//        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-//            @Override
-//            public void onSuccess(LoginResult loginResult) {
-//
-//            }
-//
-//            @Override
-//            public void onCancel() {
-//
-//            }
-//
-//            @Override
-//            public void onError(FacebookException error) {
-//
-//            }
-//        });
-//        LoginManager.getInstance().logInWithPublishPermissions(fragmentOrActivity, Arrays.asList("user_birthday"));
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
                         // App code
-                        Log.d("feef","df2");
+                        Log.d("feef", "onSuccess");
                     }
 
                     @Override
@@ -92,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        callbackManager.onActivityResult(requestCode,resultCode,data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -100,40 +84,50 @@ public class MainActivity extends AppCompatActivity {
     AccessTokenTracker tokenTracker = new AccessTokenTracker() {
         @Override
         protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
-            Log.d("feef","df");
-            if(currentAccessToken == null){
+            Log.d("feef", "AccessTokenTracker");
+            if (currentAccessToken == null) {
                 textEmail.setText("");
                 textName.setText("");
-                Toast.makeText(MainActivity.this,"User logged out",Toast.LENGTH_LONG).show();
-            }
-            else{
+                Toast.makeText(MainActivity.this, "User logged out", Toast.LENGTH_LONG).show();
+            } else {
 //                loadUserProfile(currentAccessToken);
                 GraphRequest request = GraphRequest.newGraphPathRequest(
                         currentAccessToken,
-                        "/me/feed",
+                        "/me",
                         new GraphRequest.Callback() {
                             @Override
                             public void onCompleted(GraphResponse response) {
-                                Log.i("feef2",response.toString());
+                                JSONObject result = response.getJSONObject();
                                 try {
-                                    JSONArray jsonData = new JSONArray(response);
-//                                    for(int i=0; i< jsonData.length(); i++) {
-//                                        JSONObject postJsonObject = jsonData.getJSONObject(i);
-//                                        String userId = postJsonObject.getJSONArray("data").toString();
-//                                        Log.i("feef3",userId);
-//                                    }
+                                    Log.i("result", result.getString("name"));
+                                    textName.setText(result.getString("name"));
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
+
                             }
                         });
 
                 request.executeAsync();
+
+                new GraphRequest(
+                        AccessToken.getCurrentAccessToken(),
+                        "374515670479024",
+                        null,
+                        HttpMethod.GET,
+                        new GraphRequest.Callback() {
+                            public void onCompleted(GraphResponse response) {
+                                /* handle the result */
+                                JSONObject result = response.getJSONObject();
+                                Log.i("getCurrentAccessToken", result.toString());
+                            }
+                        }
+                ).executeAsync();
             }
         }
     };
 
-    private void loadUserProfile (AccessToken accessToken){
+    // private void loadUserProfile (AccessToken accessToken){
 //        GraphRequest request = GraphRequest.newMeRequest(newAccessToken, new GraphRequest.GraphJSONObjectCallback() {
 //            @Override
 //            public void onCompleted(JSONObject object, GraphResponse response) {
@@ -167,11 +161,9 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
-
 //        Bundle parameters = new Bundle();
 //        parameters.putString("fields","first_name,last_name,email_id");
 //        request.setParameters(parameters);
 //        request.executeAsync();
 
-    }
 }
