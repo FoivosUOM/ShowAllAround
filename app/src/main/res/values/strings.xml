@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">ShowAllAround</string>
     <string name="facebook_app_id">374515670479024</string>
+<!--    <string name="facebook_app_id">1457335641122668</string>-->
+<!--    <string name="fb_login_protocol_scheme">fb14668</string>-->
     <string name="fb_login_protocol_scheme">fb374515670479024</string>
 </resources>
