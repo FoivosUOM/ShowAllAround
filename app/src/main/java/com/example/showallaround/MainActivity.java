@@ -24,13 +24,6 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -38,24 +31,13 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.List;
-
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-//    String getTwitterAccessToken = getString(R.string.twitter_accessToken);
+    //    String getTwitterAccessToken = getString(R.string.twitter_accessToken);
 //    String getTwitterAccessTokenSecret = getString(R.string.twitter_accessTokenSecret);
 //    String getTwitterConsumerKey = getString(R.string.twitter_consumerKey);
     String getTwitterConsumerSecret = "";
@@ -84,10 +66,9 @@ public class MainActivity extends AppCompatActivity {
         getTwitterConsumerSecret = getString(R.string.twitter_consumerSecret);
 
         initializeFacebook();
-        initializeRetrofit();
 
         View.OnClickListener twitterListener = v -> {
-            Log.i("string",getTwitterConsumerSecret);
+            Log.i("string", getTwitterConsumerSecret);
             getComments();
         };
 
@@ -163,40 +144,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void getComments(){
-        Call<List<Hashtag>> call = jsonPlaceHolderApi.getHashtags(LondonId);
-
-        call.enqueue(new Callback<List<Hashtag>>() {
-            @Override
-            public void onResponse(Call<List<Hashtag>> call, Response<List<Hashtag>> response) {
-                if(!response.isSuccessful()){
-                    textViewResult.setText(response.code());
-                    return;
-                }
-
-                List<Hashtag> comments;
-                comments = response.body();
-
-                Log.i("body",response.body().toString());
-//
-//                for(Hashtag post:comments){
-//                    String content = "";
-//                    content+="Hashtag: " + post.getName() + "\n";
-//                    content+="URL: " + post.getUrl() + "\n";
-//                    content+="Query: " + post.getQuery() + "\n";
-//                    content+="Tweet Volume: " + post.getTweet_volume() + "\n\n";
-//                    textViewResult.append(content);
-//                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Hashtag>> call, Throwable t) {
-                textViewResult.setText(t.getMessage());
-            }
-        });
-    };
-
-    private void initializeFacebook(){
+    private void initializeFacebook() {
         Button button = findViewById(R.id.button3);
         loginButton = (LoginButton) findViewById(R.id.button2);
         twitterButton = findViewById(R.id.twitterButton);
@@ -260,40 +208,9 @@ public class MainActivity extends AppCompatActivity {
         };
 
         button.setOnClickListener(listenerGetData);
-    };
+    }
 
-    private void initializeRetrofit(){
-
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public okhttp3.Response intercept(Chain chain) throws IOException {
-                        Request originalRequest = chain.request();
-                        Request newRequest = originalRequest.newBuilder()
-                                .addHeader("Authorization", "Bearer " + getString(R.string.twitter_bearertoken))
-                                .build();
-                        return chain.proceed(newRequest);
-                    }
-                })
-                .addInterceptor(loggingInterceptor)
-                .build();
-
-        Gson gson =
-                new GsonBuilder()
-                        .registerTypeAdapter(Hashtag.class, new MyDeserializer())
-                        .create();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(okHttpClient)
-                .baseUrl("https://api.twitter.com/1.1/trends/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        jsonPlaceHolderApi = retrofit.create(JsonPlaceHolderApi.class);
-    };
-
-    public void whenAsync() {
+    public void getComments() {
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -318,38 +235,42 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
 //                Log.i("response",response.body().toString());
                 JSONArray array = null;
+                JSONObject object = null;
                 try {
                     array = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
-                    Log.i("response",""+array.length());
+                    Log.i("response", "" + array.length());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 for (int i = 0; i < array.length(); i++) {
                     try {
-                        JSONObject object = array.getJSONObject(i);
-                        Log.i("response",""+object);
+                        object = array.getJSONObject(i);
+                        Log.i("response", "" + object);
+                        String content = "";
+                        content += "Hashtag: " + object.getString("name") + "\n";
+                        content += "URL: " + object.getString("url") + "\n";
+                        content += "Query: " + object.getString("query") + "\n";
+                        content += "Tweet Volume: " + object.getString("tweet_volume") + "\n\n";
+
+                        String finalContent = content;
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+
+                                textViewResult.append(finalContent);
+
+                            }
+                        });
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+
 //                    prod = new Product(object.getInt("id_produit"), object.getString("nom"), object.getString("description"), object.getInt("qte_stock"), object.getInt("prix"), object.getString("img_avant"), object.getString("img_arriere"), object.getString("img_cote"));
+
                 }
             }
         });
-
-    }
-}
-
-class MyDeserializer implements JsonDeserializer<Hashtag>
-{
-    @Override
-    public Hashtag deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
-            throws JsonParseException
-    {
-//        JsonElement content = je.getAsJsonObject().getAsJsonArray("trends");
-
-        JsonObject employeeObject = je.getAsJsonObject();
-        Log.i("lor",employeeObject.toString());
-        return new Gson().fromJson(employeeObject, Hashtag.class);
 
     }
 }
