@@ -4,4 +4,10 @@
 <!--    <string name="facebook_app_id">1457335641122668</string>-->
 <!--    <string name="fb_login_protocol_scheme">fb14668</string>-->
     <string name="fb_login_protocol_scheme">fb374515670479024</string>
+
+    <string name="twitter.consumerKey">RbrqIYaM05K4uDq9AR2ECf5R1</string>
+    <string name="twitter.consumerSecret">yHdFqGpCbVld3cwaiqzcL4B70E2W8tQouJc1ZfhQAqt2OGrzEv</string>
+    <string name="twitter.accessToken">779768016775118848-XXXHxvnPEQFcZMeRGz1gDivoP53EWrk</string>
+    <string name="twitter.accessTokenSecret">aKRbjEJMjFGk4fDEDdLQPHEvaxzeEVi4KwfeESjkSRMsm</string>
+    <string name="twitter.bearertoken">AAAAAAAAAAAAAAAAAAAAAD3AKAEAAAAAV3xZZLIYkaesgkScsx2Z%2FmSkU2E%3Dxz9aLeMPflWFeL48EewvTjbO3skw7FUbzzUGyxBhzoq2YXsJFg</string>
 </resources>
