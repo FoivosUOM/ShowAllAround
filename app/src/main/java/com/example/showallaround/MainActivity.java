@@ -9,11 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.showallaround.intefraces.JsonPlaceHolderApi;
-import com.example.showallaround.object.classes.Hashtag;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -31,6 +28,10 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -40,36 +41,32 @@ public class MainActivity extends AppCompatActivity {
     //    String getTwitterAccessToken = getString(R.string.twitter_accessToken);
 //    String getTwitterAccessTokenSecret = getString(R.string.twitter_accessTokenSecret);
 //    String getTwitterConsumerKey = getString(R.string.twitter_consumerKey);
-    String getTwitterConsumerSecret = "";
-    private final OkHttpClient client = new OkHttpClient();
+    String getTwitterBearerToken = "";
 
     private TextView textViewResult;
     private LoginButton loginButton;
     private Button twitterButton;
-    private ImageView imageView;
     private TextView textName, textEmail;
     private LoginResult loginResponse;
     private JSONObject userInfo = null;
     private String userAccountId = null;
     private String userId = null;
-    private String LondonId = "44418";
+    private String londonId = "44418";
     private CallbackManager callbackManager;
     AccessToken accessToken = null;
-
-    private JsonPlaceHolderApi jsonPlaceHolderApi;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         textViewResult = findViewById(R.id.textView2);
-        getTwitterConsumerSecret = getString(R.string.twitter_consumerSecret);
+        getTwitterBearerToken = getString(R.string.twitter_bearertoken);
 
         initializeFacebook();
 
         View.OnClickListener twitterListener = v -> {
-            Log.i("string", getTwitterConsumerSecret);
-            getComments();
+//            getTrendingHashtags();
+            getSearchedHashtags();
         };
 
         twitterButton.setOnClickListener(twitterListener);
@@ -210,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(listenerGetData);
     }
 
-    public void getComments() {
+    public void getTrendingHashtags() {
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -220,8 +217,8 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://api.twitter.com/1.1/trends/place.json?id=44418")
-                .addHeader("Authorization", "Bearer AAAAAAAAAAAAAAAAAAAAAD3AKAEAAAAAV3xZZLIYkaesgkScsx2Z%2FmSkU2E%3Dxz9aLeMPflWFeL48EewvTjbO3skw7FUbzzUGyxBhzoq2YXsJFg")
+                .url("https://api.twitter.com/1.1/trends/place.json?id="+ londonId)
+                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
                 .build();
 
 
@@ -254,23 +251,70 @@ public class MainActivity extends AppCompatActivity {
 
                         String finalContent = content;
                         runOnUiThread(new Runnable() {
-
                             @Override
                             public void run() {
-
                                 textViewResult.append(finalContent);
-
                             }
                         });
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
-//                    prod = new Product(object.getInt("id_produit"), object.getString("nom"), object.getString("description"), object.getInt("qte_stock"), object.getInt("prix"), object.getString("img_avant"), object.getString("img_arriere"), object.getString("img_cote"));
-
                 }
             }
         });
 
     }
+    public void getSearchedHashtags() {
+
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://api.twitter.com/2/tweets/search/recent?tweet.fields=entities&query=%23NBA&max_results=99")
+                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
+                .build();
+
+
+        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+
+                HashSet<String> sortedHashtagList = new HashSet<String>();
+                try {
+                    JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
+                    for (int i = 0; i < array.length(); i++) {
+                        if(array.getJSONObject(i).getJSONObject("entities").has("hashtags")){
+                            JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
+
+                            for (int j = 0; j < hashtagList.length(); j++) {
+                                Log.i("response"+i, hashtagList.getJSONObject(j).get("tag").toString());
+                                if(hashtagList.getJSONObject(j).get("tag").toString().contains("NBA")){
+                                    Log.i("responses3", hashtagList.getJSONObject(j).get("tag").toString());
+                                    sortedHashtagList.add(hashtagList.getJSONObject(j).get("tag").toString());
+                                }
+                            };
+                        };
+
+                    };
+                    for(String temp : sortedHashtagList){
+                        System.out.println(temp);
+                    }
+
+                } catch (JSONException e) {
+                    Log.e("error",e.getMessage());
+                }
+            }
+        });
+
+    }
+
 }
