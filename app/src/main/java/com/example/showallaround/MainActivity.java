@@ -7,7 +7,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,6 +28,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -54,8 +57,10 @@ public class MainActivity extends AppCompatActivity {
     private String getTwitterBearerToken = "";
     private TextView textView;
     private ListView myListView;
-    private ArrayList<Hashtag> listOfHashtags = new ArrayList<Hashtag>();
-    private ArrayList<Hashtag> myRowItems  = new ArrayList<Hashtag>();
+    private ArrayList<Hashtag> listOfHashtags;
+    private EditText searchInput;
+    private Button searchButton;
+    private HashtagListAdapter adapter;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +69,25 @@ public class MainActivity extends AppCompatActivity {
 
         londonId = getString(R.string.twitter_londonId);
         getTwitterBearerToken = getString(R.string.twitter_bearertoken);
-        textView = findViewById(R.id.textViewListOfHashtags);
-        myListView = findViewById(R.id.listView);
+
+        searchInput = findViewById(R.id.editTextTextSearchHashtags);
+        searchButton = findViewById(R.id.buttonSearch);
+        listOfHashtags = new ArrayList<>();
+        adapter = new HashtagListAdapter(getApplicationContext(), listOfHashtags);
+        myListView = findViewById(R.id.listViewNEw);
         getTrendingHashtags();
-        HashtagAdapter adapter = new HashtagAdapter(getApplicationContext(),listOfHashtags);
-        myListView.setAdapter(adapter);
+
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Button buttonClicked = (Button) view;
+                String query = searchInput.getText().toString();
+                Log.i("search", query);
+                getSearchedHashtags(query);
+            }
+        };
+
+        searchButton.setOnClickListener(listener);
 
     }
 
@@ -140,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
+
     public void getTrendingHashtags() {
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -150,8 +170,8 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://api.twitter.com/1.1/trends/place.json?id="+ londonId)
-                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
+                .url("https://api.twitter.com/1.1/trends/place.json?id=" + londonId)
+                .addHeader("Authorization", "Bearer " + getTwitterBearerToken)
                 .build();
 
 
@@ -167,28 +187,87 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject trendingHashtag;
                 try {
                     listOfTrendHastags = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
-                    Log.i("response", "" + listOfTrendHastags.length());
+//                    Log.i("response", "" + listOfTrendHastags.length());
                     for (int i = 0; i < listOfTrendHastags.length(); i++) {
                         try {
-
                             trendingHashtag = listOfTrendHastags.getJSONObject(i);
-                            Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"),trendingHashtag.getString("query"));
+                            Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"), trendingHashtag.getString("query"));
                             listOfHashtags.add(hashtag);
-                            String content = "";
-                            content += "Hashtag: " + hashtag.getName() + "\n";
-                            content += "Query: " + hashtag.getQuery() + "\n\n";
-
-                            String finalContent = content;
-                            runOnUiThread(() -> textView.append(finalContent));
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
+                    runOnUiThread(() -> myListView.setAdapter(adapter));
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
+            }
+        });
+
+    }
+
+    public void getSearchedHashtags(String hashtagQuery) {
+
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://api.twitter.com/2/tweets/search/recent?tweet.fields=entities&query=" + hashtagQuery + "&max_results=99")
+                .addHeader("Authorization", "Bearer " + getTwitterBearerToken)
+                .build();
+
+
+        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+
+                HashSet<String> sortedHashtagList = new HashSet<String>();
+                try {
+                    JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
+                    for (int i = 0; i < array.length(); i++) {
+                        if(array.getJSONObject(i).has("entities")){
+                            if (array.getJSONObject(i).getJSONObject("entities").has("hashtags")) {
+                                JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
+                                for (int j = 0; j < hashtagList.length(); j++) {
+                                    Log.i("response" + i, hashtagList.getJSONObject(j).get("tag").toString());
+                                    if (hashtagList.getJSONObject(j).get("tag").toString().contains(hashtagQuery)) {
+                                        Log.i("responses", hashtagList.getJSONObject(j).get("tag").toString());
+                                        sortedHashtagList.add(hashtagList.getJSONObject(j).get("tag").toString());
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    listOfHashtags.clear();
+                    for (String temp : sortedHashtagList) {
+                        System.out.println(temp);
+                        Hashtag hashtag = new Hashtag(temp, temp);
+                        listOfHashtags.add(hashtag);
+                    }
+                    runOnUiThread(() -> {
+
+
+                        myListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+
+                    });
+
+                } catch (JSONException e) {
+                    Log.e("error", e.getMessage());
+                }
             }
         });
 

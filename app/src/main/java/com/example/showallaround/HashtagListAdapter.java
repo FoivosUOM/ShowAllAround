@@ -9,15 +9,15 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class HashtagAdapter extends BaseAdapter {
+public class HashtagListAdapter extends BaseAdapter {
 
     private ArrayList<Hashtag> singleRow;
     private LayoutInflater thisInflater;
 
-    public HashtagAdapter(Context context, ArrayList<Hashtag> aRow) {
+    public HashtagListAdapter(Context context, ArrayList<Hashtag> aRow) {
 
         this.singleRow = aRow;
-        thisInflater = ( LayoutInflater.from(context) );
+        thisInflater = (LayoutInflater.from(context));
 
     }
 
@@ -28,7 +28,7 @@ public class HashtagAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return singleRow.get( position );
+        return singleRow.get(position);
     }
 
     @Override
@@ -38,15 +38,15 @@ public class HashtagAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if(convertView == null){
-            convertView = thisInflater.inflate(R.layout.hashtag_list_item,parent,false);
+        if (convertView == null) {
+            convertView = thisInflater.inflate(R.layout.list_item_hashtag, parent, false);
+            TextView theHeading = convertView.findViewById(R.id.textViewHeadingTitle);
+            TextView theSubHeading = convertView.findViewById(R.id.textViewHashtagQuery);
 
-            TextView name = convertView.findViewById(R.id.textView3);
-            TextView query = convertView.findViewById(R.id.textView4);
+            Hashtag currentRow = (Hashtag) getItem(position);
 
-            Hashtag hashtag = (Hashtag) getItem(position);
-            name.setText(hashtag.getName());
-            query.setText(hashtag.getQuery());
+            theHeading.setText(currentRow.getName());
+            theSubHeading.setText(currentRow.getQuery());
         }
 
         return convertView;
