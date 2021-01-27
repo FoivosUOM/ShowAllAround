@@ -7,16 +7,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
 import com.facebook.HttpMethod;
-import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.GraphRequest;
@@ -28,9 +25,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,23 +50,26 @@ public class MainActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     AccessToken accessToken = null;
 
+    private String londonId;
+    private String getTwitterBearerToken = "";
+    private TextView textView;
+    private ListView myListView;
+    private ArrayList<Hashtag> listOfHashtags = new ArrayList<Hashtag>();
+    private ArrayList<Hashtag> myRowItems  = new ArrayList<Hashtag>();
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("Trending Hashtags");
 
-        textViewResult = findViewById(R.id.textView2);
+        londonId = getString(R.string.twitter_londonId);
+        getTwitterBearerToken = getString(R.string.twitter_bearertoken);
+        textView = findViewById(R.id.textViewListOfHashtags);
+        myListView = findViewById(R.id.listView);
+        getTrendingHashtags();
+        HashtagAdapter adapter = new HashtagAdapter(getApplicationContext(),listOfHashtags);
+        myListView.setAdapter(adapter);
 
-        initializeFacebook();
-
-        View.OnClickListener twitterListener = v -> {
-//            getTrendingHashtags();
-//            getSearchedHashtags();
-            Intent intent = new Intent(MainActivity.this, TrendingHashtagsActivity.class);
-
-            startActivity(intent);
-        };
-
-        twitterButton.setOnClickListener(twitterListener);
     }
 
     private void displayUserInfo(JSONObject object) {
@@ -142,71 +140,123 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
+    public void getTrendingHashtags() {
 
-    private void initializeFacebook() {
-        Button button = findViewById(R.id.button3);
-        loginButton = (LoginButton) findViewById(R.id.button2);
-        twitterButton = findViewById(R.id.twitterButton);
-        textName = findViewById(R.id.txtName);
-        textEmail = findViewById(R.id.txtEmail);
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        accessToken = AccessToken.getCurrentAccessToken();
-        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
 
-        Profile profile = Profile.getCurrentProfile();
-
-        if (isLoggedIn) {
-            Log.i("log", "isLoggedIn");
-            Log.i("log", profile.getId());
-            userId = profile.getId();
-            textName.setText(profile.getName());
-            textEmail.setText(profile.getId());
-        } else
-            Log.i("log", "false");
+        Request request = new Request.Builder()
+                .url("https://api.twitter.com/1.1/trends/place.json?id="+ londonId)
+                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
+                .build();
 
 
-        callbackManager = CallbackManager.Factory.create();
-
-        loginButton.registerCallback(callbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        loginResponse = loginResult;
-
-                        GraphRequest request = GraphRequest.newMeRequest(loginResponse.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                            @Override
-                            public void onCompleted(JSONObject object, GraphResponse response) {
-                                userInfo = object;
-                                displayUserInfo(object);
-                            }
-                        });
-
-                        Bundle parameters = new Bundle();
-                        parameters.putString("fields", "name,id,email");
-                        request.setParameters(parameters);
-                        request.executeAsync();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        // App code
-                    }
-
-                    @Override
-                    public void onError(FacebookException exception) {
-                        // App code
-                    }
-                });
-
-        View.OnClickListener listenerGetData = new View.OnClickListener() {
+        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
-            public void onClick(View v) {
-                Button buttonClicked = (Button) v;
-                getUserAccountId(userInfo);
-            }
-        };
+            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
 
-        button.setOnClickListener(listenerGetData);
+            }
+
+            @Override
+            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+                JSONArray listOfTrendHastags = null;
+                JSONObject trendingHashtag;
+                try {
+                    listOfTrendHastags = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
+                    Log.i("response", "" + listOfTrendHastags.length());
+                    for (int i = 0; i < listOfTrendHastags.length(); i++) {
+                        try {
+
+                            trendingHashtag = listOfTrendHastags.getJSONObject(i);
+                            Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"),trendingHashtag.getString("query"));
+                            listOfHashtags.add(hashtag);
+                            String content = "";
+                            content += "Hashtag: " + hashtag.getName() + "\n";
+                            content += "Query: " + hashtag.getQuery() + "\n\n";
+
+                            String finalContent = content;
+                            runOnUiThread(() -> textView.append(finalContent));
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
     }
+//    private void initializeFacebook() {
+//        Button button = findViewById(R.id.button3);
+//        loginButton = (LoginButton) findViewById(R.id.button2);
+//        twitterButton = findViewById(R.id.twitterButton);
+//        textName = findViewById(R.id.txtName);
+//        textEmail = findViewById(R.id.txtEmail);
+//
+//        accessToken = AccessToken.getCurrentAccessToken();
+//        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
+//
+//        Profile profile = Profile.getCurrentProfile();
+//
+//        if (isLoggedIn) {
+//            Log.i("log", "isLoggedIn");
+//            Log.i("log", profile.getId());
+//            userId = profile.getId();
+//            textName.setText(profile.getName());
+//            textEmail.setText(profile.getId());
+//        } else
+//            Log.i("log", "false");
+//
+//
+//        callbackManager = CallbackManager.Factory.create();
+//
+//        loginButton.registerCallback(callbackManager,
+//                new FacebookCallback<LoginResult>() {
+//                    @Override
+//                    public void onSuccess(LoginResult loginResult) {
+//                        loginResponse = loginResult;
+//
+//                        GraphRequest request = GraphRequest.newMeRequest(loginResponse.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+//                            @Override
+//                            public void onCompleted(JSONObject object, GraphResponse response) {
+//                                userInfo = object;
+//                                displayUserInfo(object);
+//                            }
+//                        });
+//
+//                        Bundle parameters = new Bundle();
+//                        parameters.putString("fields", "name,id,email");
+//                        request.setParameters(parameters);
+//                        request.executeAsync();
+//                    }
+//
+//                    @Override
+//                    public void onCancel() {
+//                        // App code
+//                    }
+//
+//                    @Override
+//                    public void onError(FacebookException exception) {
+//                        // App code
+//                    }
+//                });
+//
+//        View.OnClickListener listenerGetData = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Button buttonClicked = (Button) v;
+//                getUserAccountId(userInfo);
+//            }
+//        };
+//
+//        button.setOnClickListener(listenerGetData);
+//    }
 
 }

@@ -39,8 +39,8 @@ public class TrendingHashtagsActivity extends AppCompatActivity {
 
         londonId = getString(R.string.twitter_londonId);
         getTwitterBearerToken = getString(R.string.twitter_bearertoken);
-        textView = findViewById(R.id.textView5);
-        myListView = findViewById(R.id.mylistView);
+        textView = findViewById(R.id.textViewListOfHashtags);
+        myListView = findViewById(R.id.listView);
         getTrendingHashtags();
         HashtagAdapter adapter = new HashtagAdapter(getApplicationContext(),listOfHashtags);
         myListView.setAdapter(adapter);

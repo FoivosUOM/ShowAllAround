@@ -26,12 +26,12 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textView5"
+                android:id="@+id/textViewListOfHashtags"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <ListView
-                android:id="@+id/mylistView"
+                android:id="@+id/listView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>
