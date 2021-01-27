@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     //    String getTwitterAccessToken = getString(R.string.twitter_accessToken);
 //    String getTwitterAccessTokenSecret = getString(R.string.twitter_accessTokenSecret);
 //    String getTwitterConsumerKey = getString(R.string.twitter_consumerKey);
-    String getTwitterBearerToken = "";
+
 
     private TextView textViewResult;
     private LoginButton loginButton;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private JSONObject userInfo = null;
     private String userAccountId = null;
     private String userId = null;
-    private String londonId = "44418";
+
     private CallbackManager callbackManager;
     AccessToken accessToken = null;
 
@@ -60,13 +60,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textViewResult = findViewById(R.id.textView2);
-        getTwitterBearerToken = getString(R.string.twitter_bearertoken);
 
         initializeFacebook();
 
         View.OnClickListener twitterListener = v -> {
 //            getTrendingHashtags();
-            getSearchedHashtags();
+//            getSearchedHashtags();
+            Intent intent = new Intent(MainActivity.this, TrendingHashtagsActivity.class);
+
+            startActivity(intent);
         };
 
         twitterButton.setOnClickListener(twitterListener);
@@ -205,116 +207,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         button.setOnClickListener(listenerGetData);
-    }
-
-    public void getTrendingHashtags() {
-
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .build();
-
-        Request request = new Request.Builder()
-                .url("https://api.twitter.com/1.1/trends/place.json?id="+ londonId)
-                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
-                .build();
-
-
-        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-//                Log.i("response",response.body().toString());
-                JSONArray array = null;
-                JSONObject object = null;
-                try {
-                    array = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
-                    Log.i("response", "" + array.length());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < array.length(); i++) {
-                    try {
-                        object = array.getJSONObject(i);
-                        Log.i("response", "" + object);
-                        String content = "";
-                        content += "Hashtag: " + object.getString("name") + "\n";
-                        content += "URL: " + object.getString("url") + "\n";
-                        content += "Query: " + object.getString("query") + "\n";
-                        content += "Tweet Volume: " + object.getString("tweet_volume") + "\n\n";
-
-                        String finalContent = content;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textViewResult.append(finalContent);
-                            }
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-
-    }
-    public void getSearchedHashtags() {
-
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .build();
-
-        Request request = new Request.Builder()
-                .url("https://api.twitter.com/2/tweets/search/recent?tweet.fields=entities&query=%23NBA&max_results=99")
-                .addHeader("Authorization", "Bearer "+getTwitterBearerToken)
-                .build();
-
-
-        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-
-                HashSet<String> sortedHashtagList = new HashSet<String>();
-                try {
-                    JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
-                    for (int i = 0; i < array.length(); i++) {
-                        if(array.getJSONObject(i).getJSONObject("entities").has("hashtags")){
-                            JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
-
-                            for (int j = 0; j < hashtagList.length(); j++) {
-                                Log.i("response"+i, hashtagList.getJSONObject(j).get("tag").toString());
-                                if(hashtagList.getJSONObject(j).get("tag").toString().contains("NBA")){
-                                    Log.i("responses3", hashtagList.getJSONObject(j).get("tag").toString());
-                                    sortedHashtagList.add(hashtagList.getJSONObject(j).get("tag").toString());
-                                }
-                            };
-                        };
-
-                    };
-                    for(String temp : sortedHashtagList){
-                        System.out.println(temp);
-                    }
-
-                } catch (JSONException e) {
-                    Log.e("error",e.getMessage());
-                }
-            }
-        });
-
     }
 
 }
