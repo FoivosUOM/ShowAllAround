@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
                     for (int i = 0; i < array.length(); i++) {
-                        if(array.getJSONObject(i).has("entities")){
+                        if (array.getJSONObject(i).has("entities")) {
                             if (array.getJSONObject(i).getJSONObject("entities").has("hashtags")) {
                                 JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
                                 for (int j = 0; j < hashtagList.length(); j++) {
@@ -258,11 +258,8 @@ public class MainActivity extends AppCompatActivity {
                         listOfHashtags.add(hashtag);
                     }
                     runOnUiThread(() -> {
-
-
                         myListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-
                     });
 
                 } catch (JSONException e) {
