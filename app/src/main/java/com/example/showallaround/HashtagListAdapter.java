@@ -4,33 +4,70 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class HashtagListAdapter extends BaseAdapter implements View.OnClickListener{
+public class HashtagListAdapter extends RecyclerView.Adapter<HashtagListAdapter.HashtagListViewHolder> {
+    private ArrayList<Hashtag> list;
+    LayoutInflater inflater;
+    private OnItemClickListener buttoListener;
 
-    private ArrayList<Hashtag> singleRow;
-    private LayoutInflater thisInflater;
+    public interface OnItemClickListener{
+        void onItemClick(int position);
+    }
 
-    public HashtagListAdapter(Context context, ArrayList<Hashtag> aRow) {
+    public void setOnItemClickListener (OnItemClickListener listener){
+        buttoListener = listener;
+    }
 
-        this.singleRow = aRow;
-        thisInflater = (LayoutInflater.from(context));
+    public static class HashtagListViewHolder extends RecyclerView.ViewHolder{
+        public TextView title;
+        public TextView query;
 
+        public HashtagListViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+            super(itemView);
+            title = itemView.findViewById(R.id.textViewHeadingTitle);
+            query = itemView.findViewById(R.id.textViewHashtagQuery);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(listener != null){
+                        int position = getAdapterPosition();
+                        if(position != RecyclerView.NO_POSITION){
+                            listener.onItemClick(position);
+                        }
+                    }
+                }
+            });
+        }
+    };
+
+    public HashtagListAdapter(Context context,ArrayList<Hashtag> hashtagList) {
+        this.inflater = LayoutInflater.from(context);
+        this.list = hashtagList;
+    }
+
+    @NonNull
+    @Override
+    public HashtagListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hashtag,parent,false);
+        HashtagListViewHolder viewHolder = new HashtagListViewHolder(view,buttoListener);
+        return viewHolder;
     }
 
     @Override
-    public int getCount() {
-        return singleRow.size();
+    public void onBindViewHolder(@NonNull HashtagListViewHolder holder, int position) {
+        Hashtag hashtag = list.get(position);
+        holder.title.setText(hashtag.getName());
+        holder.query.setText(hashtag.getQuery());
     }
 
-    @Override
-    public Object getItem(int position) {
-        return singleRow.get(position);
-    }
+
 
     @Override
     public long getItemId(int position) {
@@ -38,23 +75,24 @@ public class HashtagListAdapter extends BaseAdapter implements View.OnClickListe
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = thisInflater.inflate(R.layout.list_item_hashtag, parent, false);
-            TextView theHeading = convertView.findViewById(R.id.textViewHeadingTitle);
-            TextView theSubHeading = convertView.findViewById(R.id.textViewHashtagQuery);
-
-            Hashtag currentRow = (Hashtag) getItem(position);
-
-            theHeading.setText(currentRow.getName());
-            theSubHeading.setText(currentRow.getQuery());
-        }
-
-        return convertView;
+    public int getItemCount() {
+        return list.size();
     }
 
-    @Override
-    public void onClick(View v) {
-        System.out.println("temp");
-    }
+//    @Override
+//    public View getView(int position, View convertView, ViewGroup parent) {
+//        if (convertView == null) {
+//            convertView = thisInflater.inflate(R.layout.list_item_hashtag, parent, false);
+//            TextView theHeading = convertView.findViewById(R.id.textViewHeadingTitle);
+//            TextView theSubHeading = convertView.findViewById(R.id.textViewHashtagQuery);
+//
+//            Hashtag currentRow = (Hashtag) getItem(position);
+//
+//            theHeading.setText(currentRow.getName());
+//            theSubHeading.setText(currentRow.getQuery());
+//        }
+//
+//        return convertView;
+//    }
+
 }
