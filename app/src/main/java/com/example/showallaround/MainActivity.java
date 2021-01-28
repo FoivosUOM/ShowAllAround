@@ -93,8 +93,11 @@ public class MainActivity extends AppCompatActivity {
         newAdapter.setOnItemClickListener(position -> {
             listOfHashtags.get(position);
             System.out.println(listOfHashtags.get(position).getName());
+            Intent intent = new Intent(MainActivity.this, PostsActivity.class);
+            intent.putExtra("name",listOfHashtags.get(position).getName());
+
+            startActivity(intent);
         });
-//        newAdapter.notifyDataSetChanged();
 
 
         getTrendingHashtags();
@@ -103,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             String query = searchInput.getText().toString();
             Log.i("search", query);
 //                getSearchedHashtags(query);
+
         };
 
         searchButton.setOnClickListener(listener);
