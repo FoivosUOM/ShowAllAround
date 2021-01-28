@@ -6,10 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class HashtagListAdapter extends BaseAdapter {
+public class HashtagListAdapter extends BaseAdapter implements View.OnClickListener{
 
     private ArrayList<Hashtag> singleRow;
     private LayoutInflater thisInflater;
@@ -50,5 +51,10 @@ public class HashtagListAdapter extends BaseAdapter {
         }
 
         return convertView;
+    }
+
+    @Override
+    public void onClick(View v) {
+        System.out.println("temp");
     }
 }
