@@ -40,36 +40,15 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 public class MainActivity extends AppCompatActivity {
 
-    //    String getTwitterAccessToken = getString(R.string.twitter_accessToken);
-//    String getTwitterAccessTokenSecret = getString(R.string.twitter_accessTokenSecret);
-//    String getTwitterConsumerKey = getString(R.string.twitter_consumerKey);
-
-
-    private TextView textViewResult;
-    private LoginButton loginButton;
-    private Button twitterButton;
-    private TextView textName, textEmail;
-    private LoginResult loginResponse;
-    private JSONObject userInfo = null;
-    private String userAccountId = null;
-    private String userId = null;
-
-    private CallbackManager callbackManager;
-    AccessToken accessToken = null;
-
     private String londonId;
     private String getTwitterBearerToken = "";
-    private TextView textView;
-    private ListView myListView;
     private ArrayList<Hashtag> listOfHashtags;
     private EditText searchInput;
     private Button searchButton;
-    private HashtagListAdapter adapter;
 
     private RecyclerView recyclerView;
     private HashtagListAdapter newAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private Context mainThis = this;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         View.OnClickListener listener = view -> {
             String query = searchInput.getText().toString();
             Log.i("search", query);
-//                getSearchedHashtags(query);
+                getSearchedHashtags(query);
 
         };
 
@@ -113,72 +92,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void displayUserInfo(JSONObject object) {
-        try {
-            textName.setText(object.getString("name"));
-            textEmail.setText(object.getString("email"));
-            userId = object.getString("id");
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void getUserAccountId(JSONObject object) {
-        GraphRequest request = null;
-        request = GraphRequest.newGraphPathRequest(accessToken, "/" + userId + "/accounts", new GraphRequest.Callback() {
-            @Override
-            public void onCompleted(GraphResponse response2) {
-                try {
-                    userAccountId = response2.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
-                    getAccountPosts(userAccountId);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-
-        request.executeAsync();
-    }
-
-    private void getAccountPosts(String accountId) {
-        GraphRequest request = new GraphRequest(accessToken, "/" + accountId + "/feed", null, HttpMethod.GET, new GraphRequest.Callback() {
-            @Override
-            public void onCompleted(GraphResponse response2) {
-                try {
-//                    Log.i("length", String.valueOf(response2.getJSONObject().getJSONArray("data").length()));
-
-                    Log.i("length", response2.getJSONObject().getJSONArray("data").getJSONObject(2).getString("id"));
-                    getPostById(response2.getJSONObject().getJSONArray("data").getJSONObject(2).getString("id"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        request.executeAsync();
-    }
-
-    private void getPostById(String postId) {
-
-        GraphRequest request = new GraphRequest(accessToken, "/" + postId, null, HttpMethod.GET, new GraphRequest.Callback() {
-            @Override
-            public void onCompleted(GraphResponse response2) {
-                Log.i("RESPONSE", response2.toString());
-
-            }
-        });
-
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "created_time,message,full_picture");
-        request.setParameters(parameters);
-        request.executeAsync();
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -207,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
                 JSONArray listOfTrendHastags = null;
                 JSONObject trendingHashtag;
-                listOfHashtags.clear();
+                ArrayList<Hashtag> list = new ArrayList<Hashtag>();
                 try {
                     listOfTrendHastags = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
 //                    Log.i("response", "" + listOfTrendHastags.length());
@@ -215,16 +130,23 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             trendingHashtag = listOfTrendHastags.getJSONObject(i);
                             Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"), trendingHashtag.getString("query"));
-                            listOfHashtags.add(hashtag);
+                            list.add(hashtag);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
-                    runOnUiThread(() -> {
-                                newAdapter = new HashtagListAdapter(getApplicationContext(),listOfHashtags);
-                                newAdapter.notifyDataSetChanged();
-                            }
-                    );
+                    listOfHashtags.clear();
+                    listOfHashtags.addAll(list);
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            newAdapter.notifyDataSetChanged();
+
+                        }
+                    });
+
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -235,131 +157,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-//    public void getSearchedHashtags(String hashtagQuery) {
-//
-//        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-//        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-//
-//        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-//                .addInterceptor(loggingInterceptor)
-//                .build();
-//
-//        Request request = new Request.Builder()
-//                .url("https://api.twitter.com/2/tweets/search/recent?tweet.fields=entities&query=" + hashtagQuery + "&max_results=99")
-//                .addHeader("Authorization", "Bearer " + getTwitterBearerToken)
-//                .build();
-//
-//
-//        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
-//            @Override
-//            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-//
-//            }
-//
-//            @Override
-//            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-//
-//                HashSet<String> sortedHashtagList = new HashSet<String>();
-//                try {
-//                    JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
-//                    for (int i = 0; i < array.length(); i++) {
-//                        if (array.getJSONObject(i).has("entities")) {
-//                            if (array.getJSONObject(i).getJSONObject("entities").has("hashtags")) {
-//                                JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
-//                                for (int j = 0; j < hashtagList.length(); j++) {
-//                                    Log.i("response" + i, hashtagList.getJSONObject(j).get("tag").toString());
-//                                    if (hashtagList.getJSONObject(j).get("tag").toString().contains(hashtagQuery)) {
-//                                        Log.i("responses", hashtagList.getJSONObject(j).get("tag").toString());
-//                                        sortedHashtagList.add(hashtagList.getJSONObject(j).get("tag").toString());
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                    }
-//
-//                    listOfHashtags.clear();
-//                    for (String temp : sortedHashtagList) {
-//                        System.out.println(temp);
-//                        Hashtag hashtag = new Hashtag(temp, temp);
-//                        listOfHashtags.add(hashtag);
-//                    }
-//                    runOnUiThread(() -> {
-//                        myListView.setAdapter(adapter);
-//                        adapter.notifyDataSetChanged();
-//                    });
-//
-//                } catch (JSONException e) {
-//                    Log.e("error", e.getMessage());
-//                }
-//            }
-//        });
-//
-//    }
-//    private void initializeFacebook() {
-//        Button button = findViewById(R.id.button3);
-//        loginButton = (LoginButton) findViewById(R.id.button2);
-//        twitterButton = findViewById(R.id.twitterButton);
-//        textName = findViewById(R.id.txtName);
-//        textEmail = findViewById(R.id.txtEmail);
-//
-//        accessToken = AccessToken.getCurrentAccessToken();
-//        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
-//
-//        Profile profile = Profile.getCurrentProfile();
-//
-//        if (isLoggedIn) {
-//            Log.i("log", "isLoggedIn");
-//            Log.i("log", profile.getId());
-//            userId = profile.getId();
-//            textName.setText(profile.getName());
-//            textEmail.setText(profile.getId());
-//        } else
-//            Log.i("log", "false");
-//
-//
-//        callbackManager = CallbackManager.Factory.create();
-//
-//        loginButton.registerCallback(callbackManager,
-//                new FacebookCallback<LoginResult>() {
-//                    @Override
-//                    public void onSuccess(LoginResult loginResult) {
-//                        loginResponse = loginResult;
-//
-//                        GraphRequest request = GraphRequest.newMeRequest(loginResponse.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-//                            @Override
-//                            public void onCompleted(JSONObject object, GraphResponse response) {
-//                                userInfo = object;
-//                                displayUserInfo(object);
-//                            }
-//                        });
-//
-//                        Bundle parameters = new Bundle();
-//                        parameters.putString("fields", "name,id,email");
-//                        request.setParameters(parameters);
-//                        request.executeAsync();
-//                    }
-//
-//                    @Override
-//                    public void onCancel() {
-//                        // App code
-//                    }
-//
-//                    @Override
-//                    public void onError(FacebookException exception) {
-//                        // App code
-//                    }
-//                });
-//
-//        View.OnClickListener listenerGetData = new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Button buttonClicked = (Button) v;
-//                getUserAccountId(userInfo);
-//            }
-//        };
-//
-//        button.setOnClickListener(listenerGetData);
-//    }
+    public void getSearchedHashtags(String hashtagQuery) {
 
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://api.twitter.com/2/tweets/search/recent?tweet.fields=entities&query=" + hashtagQuery + "&max_results=99")
+                .addHeader("Authorization", "Bearer " + getTwitterBearerToken)
+                .build();
+
+
+        okHttpClient.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+
+                HashSet<String> sortedHashtagList = new HashSet<String>();
+                try {
+                    JSONArray array = new JSONObject(response.body().string()).getJSONArray("data");
+                    for (int i = 0; i < array.length(); i++) {
+                        if (array.getJSONObject(i).has("entities")) {
+                            if (array.getJSONObject(i).getJSONObject("entities").has("hashtags")) {
+                                JSONArray hashtagList = array.getJSONObject(i).getJSONObject("entities").getJSONArray("hashtags");
+                                for (int j = 0; j < hashtagList.length(); j++) {
+                                    if (hashtagList.getJSONObject(j).get("tag").toString().toLowerCase().contains(hashtagQuery)) {
+                                        Log.i("responses", hashtagList.getJSONObject(j).get("tag").toString());
+                                        sortedHashtagList.add(hashtagList.getJSONObject(j).get("tag").toString());
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    listOfHashtags.clear();
+                    ArrayList<Hashtag> list = new ArrayList<Hashtag>();
+                    for (String temp : sortedHashtagList) {
+                        System.out.println(temp);
+                        Hashtag hashtag = new Hashtag(temp, temp);
+                        list.add(hashtag);
+                    }
+                    listOfHashtags.addAll(list);
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            newAdapter.notifyDataSetChanged();
+
+                        }
+                    });
+
+                } catch (JSONException e) {
+                    Log.e("error", e.getMessage());
+                }
+            }
+        });
+
+    }
 }
