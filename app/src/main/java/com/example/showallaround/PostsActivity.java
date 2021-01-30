@@ -3,6 +3,9 @@ package com.example.showallaround;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +15,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.Profile;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+
 import java.io.IOException;
 
 import okhttp3.OkHttpClient;
@@ -19,6 +33,12 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class PostsActivity extends AppCompatActivity {
+
+    private AccessToken accessToken;
+    private String facebookUserId;
+    private String userId;
+
+    private LoadingDialog loadingDialog = new LoadingDialog(PostsActivity.this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,15 +48,81 @@ public class PostsActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         TextView txtGreeting = findViewById(R.id.postsID);
+        loadingDialog.startLoadingDialog();
 
-        String givenName = intent.getStringExtra("name");
+        accessToken = AccessToken.getCurrentAccessToken();
+        facebookUserId = intent.getStringExtra("userId");
+        Log.i("id", String.valueOf(accessToken));
+        Log.i("id", "String.valueOf(accessToken)");
+        getUserID();
 
-        txtGreeting.setText("Hello there, "+givenName+ " !!");
+//        txtGreeting.setText("Hello there, "+givenName+ " !!");
 
-        searchOnTwitterByHashtag(givenName);
+//        searchOnTwitterByHashtag(givenName);
+
     }
 
-    private void searchOnTwitterByHashtag(String hashtag){
+    private void getUserID() {
+        GraphRequest request = new GraphRequest(accessToken, "/" + facebookUserId + "/accounts", null, HttpMethod.GET, response -> {
+
+            try {
+                String facebookBusinessId = response.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
+                GraphRequest secondRequest = new GraphRequest(accessToken, "/" + facebookBusinessId, null, HttpMethod.GET, secondResponse -> {
+
+                    try {
+                        userId = secondResponse.getJSONObject().getJSONObject("instagram_business_account").getString("id");
+                        getIGHashtagID(userId);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "instagram_business_account");
+                secondRequest.setParameters(parameters);
+                secondRequest.executeAsync();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+
+        request.executeAsync();
+    }
+
+    private void getIGHashtagID(String user_id) {
+        GraphRequest thirdRequest = new GraphRequest(accessToken, "/ig_hashtag_search", null, HttpMethod.GET, thirdResponse -> {
+
+            try {
+                String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
+                getPostsFromIGHashtagId(ig_hashtagId,user_id);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+
+        Bundle parameters = new Bundle();
+        parameters.putString("user_id", user_id);
+        parameters.putString("q", "US");
+        thirdRequest.setParameters(parameters);
+        thirdRequest.executeAsync();
+    }
+
+    private void getPostsFromIGHashtagId(String ig_hashtagId,String user_id) {
+        GraphRequest thirdRequest = new GraphRequest(accessToken, "/"+ig_hashtagId+"/top_media", null, HttpMethod.GET, thirdResponse -> {
+
+            Log.i("length", thirdResponse.toString());
+            loadingDialog.dismissDialog();
+        });
+
+        Bundle parameters = new Bundle();
+        parameters.putString("user_id", user_id);
+        parameters.putString("fields", "id,media_type,comments_count,like_count,media_url,caption");
+        thirdRequest.setParameters(parameters);
+        thirdRequest.executeAsync();
+    }
+
+    private void searchOnTwitterByHashtag(String hashtag) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
@@ -86,4 +172,6 @@ public class PostsActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }

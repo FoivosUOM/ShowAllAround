@@ -1,7 +1,5 @@
 package com.example.showallaround;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.Nullable;
@@ -14,16 +12,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.HttpMethod;
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
+import com.example.showallaround.adapter.HashtagListAdapter;
+import com.example.showallaround.model.Hashtag;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -72,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         newAdapter.setOnItemClickListener(position -> {
             listOfHashtags.get(position);
             System.out.println(listOfHashtags.get(position).getName());
-            Intent intent = new Intent(MainActivity.this, PostsActivity.class);
+            Intent intent = new Intent(MainActivity.this, FacebookLoginActivity.class);
             intent.putExtra("name",listOfHashtags.get(position).getName());
 
             startActivity(intent);

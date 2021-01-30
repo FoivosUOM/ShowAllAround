@@ -1,4 +1,4 @@
-package com.example.showallaround;
+package com.example.showallaround.model;
 
 public class Hashtag {
     private String name;

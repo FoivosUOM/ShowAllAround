@@ -1,4 +1,4 @@
-package com.example.showallaround;
+package com.example.showallaround.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.showallaround.R;
+import com.example.showallaround.model.Hashtag;
 
 import java.util.ArrayList;
 
