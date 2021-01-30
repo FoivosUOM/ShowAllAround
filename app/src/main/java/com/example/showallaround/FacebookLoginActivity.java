@@ -26,11 +26,13 @@ public class FacebookLoginActivity extends AppCompatActivity {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     AccessToken accessToken = null;
+    private Intent intentMainToFb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_facebook_login);
+        intentMainToFb = getIntent();
 
         initializeFacebook();
     }
@@ -59,6 +61,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
             Intent intent = new Intent(FacebookLoginActivity.this, PostsActivity.class);
             intent.putExtra("facebookAccesstoken",accessToken);
             intent.putExtra("userId",profile.getId());
+            intent.putExtra("hahstag",intentMainToFb.getStringExtra("hahstag"));
 
             startActivity(intent);
         } else

@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             listOfHashtags.get(position);
             System.out.println(listOfHashtags.get(position).getName());
             Intent intent = new Intent(MainActivity.this, FacebookLoginActivity.class);
-            intent.putExtra("name",listOfHashtags.get(position).getName());
+            intent.putExtra("hahstag",listOfHashtags.get(position).getName());
 
             startActivity(intent);
         });

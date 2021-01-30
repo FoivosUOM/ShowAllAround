@@ -46,11 +46,18 @@ public class PostsActivity extends AppCompatActivity {
     private AccessToken accessToken;
     private String facebookUserId;
     private String userId;
+    private String hashtag;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private PostListAdapter newAdapter;
+    private Boolean igCompleted;
+    private Boolean twitterCompleted;
+    private int count;
+    private String mediURL = "https://scontent.cdninstagram.com/v/t51.29350-15/140055099_422290969204646_8686483779202404896_n.jpg?_nc_cat=108&ccb=2&_nc_sid=8ae9d6&_nc_ohc=vQkRDnj6F6sAX_p34SK&_nc_ht=scontent.cdninstagram.com&oh=50e0d34ec7dc4e82d2b2a5260295224f&oe=603B2234";
 
     private ArrayList<Post> listOfPosts;
+    private ArrayList<Post> listOfPostsFromIG;
+    private ArrayList<Post> listOfPostsFromTwitter;
 
     private LoadingDialog loadingDialog = new LoadingDialog(PostsActivity.this);
 
@@ -60,11 +67,18 @@ public class PostsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_posts_activity);
         Intent intent = getIntent();
         listOfPosts = new ArrayList<>();
+        listOfPostsFromIG = new ArrayList<>();
+        listOfPostsFromTwitter = new ArrayList<>();
+        igCompleted = false;
+        twitterCompleted = false;
+        count = 25;
 
         loadingDialog.startLoadingDialog();
         accessToken = AccessToken.getCurrentAccessToken();
         facebookUserId = intent.getStringExtra("userId");
-        getUserID();
+        hashtag = intent.getStringExtra("hahstag");
+        Log.i("hashtag", hashtag);
+
 
         recyclerView = findViewById(R.id.recyclerPostList);
         layoutManager = new LinearLayoutManager(this);
@@ -73,26 +87,12 @@ public class PostsActivity extends AppCompatActivity {
         newAdapter = new PostListAdapter(this, listOfPosts);
         recyclerView.setAdapter(newAdapter);
 
+        initializePostList();
 
-//        String imageUri = "https://i.imgur.com/tGbaZCY.jpg";
-//        ImageView ivBasicImage = findViewById(R.id.imageViewPicasso);
-//        Picasso.get().load(imageUri).into(ivBasicImage);
+    }
 
-//        recyclerView = findViewById(R.id.recycleViewHashtags);
-//        recyclerView.setHasFixedSize(true);
-//        layoutManager = new LinearLayoutManager(this);
-//        newAdapter = new PostListAdapter(this,listOfPosts);
-//        recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setAdapter(newAdapter);
-//        newAdapter.setOnItemClickListener(position -> {
-//            listOfHashtags.get(position);
-//            System.out.println(listOfHashtags.get(position).getName());
-//            Intent intent = new Intent(MainActivity.this, FacebookLoginActivity.class);
-//            intent.putExtra("name",listOfHashtags.get(position).getName());
-//
-//            startActivity(intent);
-//        });
-
+    private void initializePostList() {
+        getUserID();
     }
 
     private void getUserID() {
@@ -128,7 +128,7 @@ public class PostsActivity extends AppCompatActivity {
 
             try {
                 String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
-                getPostsFromIGHashtagId(ig_hashtagId,user_id);
+                getPostsFromIGHashtagId(ig_hashtagId, user_id);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -136,46 +136,39 @@ public class PostsActivity extends AppCompatActivity {
 
         Bundle parameters = new Bundle();
         parameters.putString("user_id", user_id);
-        parameters.putString("q", "US");
+        parameters.putString("q", hashtag);
         thirdRequest.setParameters(parameters);
         thirdRequest.executeAsync();
     }
 
-    private void getPostsFromIGHashtagId(String ig_hashtagId,String user_id) {
+    private void getPostsFromIGHashtagId(String ig_hashtagId, String user_id) {
         ArrayList<Post> list = new ArrayList<>();
-        GraphRequest thirdRequest = new GraphRequest(accessToken, "/"+ig_hashtagId+"/top_media", null, HttpMethod.GET, thirdResponse -> {
+        GraphRequest thirdRequest = new GraphRequest(accessToken, "/" + ig_hashtagId + "/top_media", null, HttpMethod.GET, thirdResponse -> {
 
             try {
                 for (int i = 0; i < thirdResponse.getJSONObject().getJSONArray("data").length(); i++) {
                     try {
                         JSONObject newPost = new JSONObject();
                         newPost = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(i);
-                        Post post = new Post(newPost.getString("caption"), newPost.getString("media_url"));
-                        list.add(post);
+                        if (newPost.getString("media_type").equals("IMAGE")) {
+                            Post post = new Post(newPost.getString("caption"), newPost.getString("media_url"));
+                            list.add(post);
+                        } else {
+                            Post post = new Post(newPost.getString("caption"), mediURL);
+                            list.add(post);
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-                loadingDialog.dismissDialog();
-
-                listOfPosts.clear();
-                listOfPosts.addAll(list);
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        newAdapter.notifyDataSetChanged();
-
-                    }
-                });
-
+                listOfPostsFromIG.clear();
+                listOfPostsFromIG.addAll(list);
+                searchOnTwitterByHashtag(hashtag);
 
             } catch (JSONException e) {
                 e.printStackTrace();
                 loadingDialog.dismissDialog();
             }
-            loadingDialog.dismissDialog();
         });
 
         Bundle parameters = new Bundle();
@@ -194,7 +187,7 @@ public class PostsActivity extends AppCompatActivity {
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://api.twitter.com/1.1/search/tweets.json?q=" + hashtag)
+                .url("https://api.twitter.com/1.1/search/tweets.json?q=" + hashtag + "&count=" + count)
                 .addHeader("Authorization", "Bearer " + getString(R.string.twitter_bearertoken))
                 .build();
 
@@ -207,34 +200,29 @@ public class PostsActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-                JSONArray listOfTrendHastags = null;
-                JSONObject trendingHashtag;
-//                listOfHashtags.clear();
-//                try {
-//                    listOfTrendHastags = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
-////                    Log.i("response", "" + listOfTrendHastags.length());
-//                    for (int i = 0; i < listOfTrendHastags.length(); i++) {
-//                        try {
-//                            trendingHashtag = listOfTrendHastags.getJSONObject(i);
-//                            Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"), trendingHashtag.getString("query"));
-//                            listOfHashtags.add(hashtag);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    runOnUiThread(() -> {
-//                                newAdapter = new HashtagListAdapter(getApplicationContext(),listOfHashtags);
-//                                newAdapter.notifyDataSetChanged();
-//                            }
-//                    );
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+                ArrayList<Post> list = new ArrayList<>();
+                try {
+                    JSONArray listOfTwitterPosts = new JSONObject(response.body().string()).getJSONArray("statuses");
 
+                    for (int i = 0; i < listOfTwitterPosts.length(); i++) {
+                        Post post = new Post(listOfTwitterPosts.getJSONObject(i).getString("text"), mediURL);
+                        list.add(post);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    loadingDialog.dismissDialog();
+                }
+
+                listOfPostsFromTwitter.clear();
+                listOfPostsFromTwitter.addAll(list);
+                for (int i = 0; i < count; i++) {
+                    listOfPosts.add(listOfPostsFromTwitter.get(i));
+                    listOfPosts.add(listOfPostsFromIG.get(i));
+                }
+                loadingDialog.dismissDialog();
+                runOnUiThread(() -> newAdapter.notifyDataSetChanged());
             }
         });
     }
-
 
 }
