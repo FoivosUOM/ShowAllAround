@@ -7,14 +7,23 @@ public class Post {
     private String id;
     private int comments_count;
     private int likes_count;
+    private boolean origin;
 
+    public String isOrigin() {
+        return origin? "Instagram" : "Twitter";
+    }
 
-    public Post(String text, String media_url, String id, int comments_count, int likes_count) {
+    public void setOrigin(boolean origin) {
+        this.origin = origin;
+    }
+
+    public Post(String id, String text, String media_url, int comments_count, int likes_count, boolean origin) {
         this.text = text;
         this.media_url = media_url;
         this.id = id;
         this.comments_count = comments_count;
         this.likes_count = likes_count;
+        this.origin = origin;
     }
 
     public Post(String text, String media_url) {
@@ -57,11 +66,11 @@ public class Post {
         return id;
     }
 
-    public int getComments_count() {
-        return comments_count;
+    public String getComments_count() {
+        return String.valueOf(comments_count);
     }
 
-    public int getLikes_count() {
-        return likes_count;
+    public String getLikes_count() {
+        return String.valueOf(likes_count);
     }
 }

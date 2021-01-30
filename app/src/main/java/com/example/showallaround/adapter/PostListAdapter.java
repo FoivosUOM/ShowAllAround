@@ -21,15 +21,44 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.PostLi
     LayoutInflater inflater;
     private ArrayList<Post> posts;
 
+
+    private HashtagListAdapter.OnItemClickListener buttonListener;
+
+    public interface OnItemClickListener{
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener (HashtagListAdapter.OnItemClickListener listener){
+        buttonListener = listener;
+    }
+
     public class PostListViewHolder extends RecyclerView.ViewHolder{
 
         TextView textViewText;
+        TextView textViewComments;
+        TextView textViewLikes;
+        TextView textViewOrigin;
         ImageView imagePost;
-        public PostListViewHolder(@NonNull View itemView) {
+        public PostListViewHolder(@NonNull View itemView, HashtagListAdapter.OnItemClickListener listener) {
             super(itemView);
 
             textViewText = itemView.findViewById(R.id.textViewPostText);
+            textViewComments = itemView.findViewById(R.id.textViewComments);
+            textViewLikes = itemView.findViewById(R.id.textViewLikes);
+            textViewOrigin = itemView.findViewById(R.id.textViewOrigin);
             imagePost = itemView.findViewById(R.id.imageViewPostImage);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(listener != null){
+                        int position = getAdapterPosition();
+                        if(position != RecyclerView.NO_POSITION){
+                            listener.onItemClick(position);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -42,13 +71,16 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.PostLi
     @Override
     public PostListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_post,parent,false);
-        PostListViewHolder viewHolder = new PostListViewHolder(view);
+        PostListViewHolder viewHolder = new PostListViewHolder(view, buttonListener);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull PostListAdapter.PostListViewHolder holder, int position) {
         holder.textViewText.setText(posts.get(position).getText());
+        holder.textViewComments.setText(posts.get(position).getComments_count());
+        holder.textViewLikes.setText(posts.get(position).getLikes_count());
+        holder.textViewOrigin.setText(posts.get(position).isOrigin());
         Picasso.get().load(posts.get(position).getMedia_url()).into(holder.imagePost);
     }
 

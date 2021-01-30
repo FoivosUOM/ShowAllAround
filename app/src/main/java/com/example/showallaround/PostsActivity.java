@@ -65,6 +65,7 @@ public class PostsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posts_activity);
+        setTitle("Posts from IG/TWITTER");
         Intent intent = getIntent();
         listOfPosts = new ArrayList<>();
         listOfPostsFromIG = new ArrayList<>();
@@ -86,6 +87,13 @@ public class PostsActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         newAdapter = new PostListAdapter(this, listOfPosts);
         recyclerView.setAdapter(newAdapter);
+        newAdapter.setOnItemClickListener(position -> {
+            listOfPosts.get(position);
+            Intent intentToSinglePost = new Intent(PostsActivity.this, SinglePostActivity.class);
+            intentToSinglePost.putExtra("id",listOfPosts.get(position).getId());
+
+            startActivity(intentToSinglePost);
+        });
 
         initializePostList();
 
@@ -151,7 +159,13 @@ public class PostsActivity extends AppCompatActivity {
                         JSONObject newPost = new JSONObject();
                         newPost = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(i);
                         if (newPost.getString("media_type").equals("IMAGE")) {
-                            Post post = new Post(newPost.getString("caption"), newPost.getString("media_url"));
+                            Post post = new Post(
+                                    newPost.getString("id"),
+                                    newPost.getString("caption"),
+                                    newPost.getString("media_url"),
+                                    newPost.getInt("comments_count"),
+                                    newPost.getInt("like_count"),
+                                    true);
                             list.add(post);
                         } else {
                             Post post = new Post(newPost.getString("caption"), mediURL);
@@ -205,7 +219,13 @@ public class PostsActivity extends AppCompatActivity {
                     JSONArray listOfTwitterPosts = new JSONObject(response.body().string()).getJSONArray("statuses");
 
                     for (int i = 0; i < listOfTwitterPosts.length(); i++) {
-                        Post post = new Post(listOfTwitterPosts.getJSONObject(i).getString("text"), mediURL);
+                        Post post = new Post(
+                                listOfTwitterPosts.getJSONObject(i).getString("id"),
+                                listOfTwitterPosts.getJSONObject(i).getString("text"),
+                                mediURL,
+                                listOfTwitterPosts.getJSONObject(i).getInt("retweet_count"),
+                                listOfTwitterPosts.getJSONObject(i).getInt("favorite_count"),
+                                false);
                         list.add(post);
                     }
                 } catch (JSONException e) {
