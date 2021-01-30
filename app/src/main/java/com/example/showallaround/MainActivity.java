@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private HashtagListAdapter newAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private LoadingDialog loadingDialog = new LoadingDialog(MainActivity.this);
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         searchInput = findViewById(R.id.editTextTextSearchHashtags);
         searchButton = findViewById(R.id.buttonSearch);
+        loadingDialog.startLoadingDialog();
 
         listOfHashtags = new ArrayList<>();
 
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
+                    loadingDialog.dismissDialog();
                     listOfHashtags.clear();
                     listOfHashtags.addAll(list);
                     runOnUiThread(new Runnable() {
@@ -141,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    loadingDialog.dismissDialog();
                 }
 
             }
@@ -149,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getSearchedHashtags(String hashtagQuery) {
+        loadingDialog.startLoadingDialog();
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -197,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
                         Hashtag hashtag = new Hashtag(temp, temp);
                         list.add(hashtag);
                     }
+                    loadingDialog.dismissDialog();
                     listOfHashtags.addAll(list);
                     runOnUiThread(new Runnable() {
 
@@ -210,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     Log.e("error", e.getMessage());
+                    loadingDialog.dismissDialog();
                 }
             }
         });

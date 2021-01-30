@@ -5,16 +5,23 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.example.showallaround.adapter.PostListAdapter;
+import com.example.showallaround.model.Hashtag;
+import com.example.showallaround.model.Post;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -25,8 +32,10 @@ import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -37,6 +46,11 @@ public class PostsActivity extends AppCompatActivity {
     private AccessToken accessToken;
     private String facebookUserId;
     private String userId;
+    private RecyclerView recyclerView;
+    private RecyclerView.LayoutManager layoutManager;
+    private PostListAdapter newAdapter;
+
+    private ArrayList<Post> listOfPosts;
 
     private LoadingDialog loadingDialog = new LoadingDialog(PostsActivity.this);
 
@@ -44,21 +58,40 @@ public class PostsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posts_activity);
-
         Intent intent = getIntent();
+        listOfPosts = new ArrayList<>();
 
-        TextView txtGreeting = findViewById(R.id.postsID);
         loadingDialog.startLoadingDialog();
-
         accessToken = AccessToken.getCurrentAccessToken();
         facebookUserId = intent.getStringExtra("userId");
-        Log.i("id", String.valueOf(accessToken));
-        Log.i("id", "String.valueOf(accessToken)");
         getUserID();
 
-//        txtGreeting.setText("Hello there, "+givenName+ " !!");
+        recyclerView = findViewById(R.id.recyclerPostList);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+        newAdapter = new PostListAdapter(this, listOfPosts);
+        recyclerView.setAdapter(newAdapter);
 
-//        searchOnTwitterByHashtag(givenName);
+
+//        String imageUri = "https://i.imgur.com/tGbaZCY.jpg";
+//        ImageView ivBasicImage = findViewById(R.id.imageViewPicasso);
+//        Picasso.get().load(imageUri).into(ivBasicImage);
+
+//        recyclerView = findViewById(R.id.recycleViewHashtags);
+//        recyclerView.setHasFixedSize(true);
+//        layoutManager = new LinearLayoutManager(this);
+//        newAdapter = new PostListAdapter(this,listOfPosts);
+//        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView.setAdapter(newAdapter);
+//        newAdapter.setOnItemClickListener(position -> {
+//            listOfHashtags.get(position);
+//            System.out.println(listOfHashtags.get(position).getName());
+//            Intent intent = new Intent(MainActivity.this, FacebookLoginActivity.class);
+//            intent.putExtra("name",listOfHashtags.get(position).getName());
+//
+//            startActivity(intent);
+//        });
 
     }
 
@@ -109,9 +142,39 @@ public class PostsActivity extends AppCompatActivity {
     }
 
     private void getPostsFromIGHashtagId(String ig_hashtagId,String user_id) {
+        ArrayList<Post> list = new ArrayList<>();
         GraphRequest thirdRequest = new GraphRequest(accessToken, "/"+ig_hashtagId+"/top_media", null, HttpMethod.GET, thirdResponse -> {
 
-            Log.i("length", thirdResponse.toString());
+            try {
+                for (int i = 0; i < thirdResponse.getJSONObject().getJSONArray("data").length(); i++) {
+                    try {
+                        JSONObject newPost = new JSONObject();
+                        newPost = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(i);
+                        Post post = new Post(newPost.getString("caption"), newPost.getString("media_url"));
+                        list.add(post);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                loadingDialog.dismissDialog();
+
+                listOfPosts.clear();
+                listOfPosts.addAll(list);
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        newAdapter.notifyDataSetChanged();
+
+                    }
+                });
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                loadingDialog.dismissDialog();
+            }
             loadingDialog.dismissDialog();
         });
 

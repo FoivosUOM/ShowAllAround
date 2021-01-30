@@ -15,8 +15,8 @@ import com.example.showallaround.model.Hashtag;
 import java.util.ArrayList;
 
 public class HashtagListAdapter extends RecyclerView.Adapter<HashtagListAdapter.HashtagListViewHolder> {
-    private ArrayList<Hashtag> list;
     LayoutInflater inflater;
+    private ArrayList<Hashtag> list;
     private OnItemClickListener buttoListener;
 
     public interface OnItemClickListener{
@@ -82,20 +82,5 @@ public class HashtagListAdapter extends RecyclerView.Adapter<HashtagListAdapter.
         return list.size();
     }
 
-//    @Override
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        if (convertView == null) {
-//            convertView = thisInflater.inflate(R.layout.list_item_hashtag, parent, false);
-//            TextView theHeading = convertView.findViewById(R.id.textViewHeadingTitle);
-//            TextView theSubHeading = convertView.findViewById(R.id.textViewHashtagQuery);
-//
-//            Hashtag currentRow = (Hashtag) getItem(position);
-//
-//            theHeading.setText(currentRow.getName());
-//            theSubHeading.setText(currentRow.getQuery());
-//        }
-//
-//        return convertView;
-//    }
 
 }

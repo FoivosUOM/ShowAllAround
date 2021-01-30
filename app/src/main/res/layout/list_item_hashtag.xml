@@ -27,13 +27,15 @@
                 android:id="@+id/textViewHeadingTitle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="TextView" />
+                android:text="TextView"
+                android:textColor="#000000" />
 
             <TextView
                 android:id="@+id/textViewHashtagQuery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextViewDescription" />
+                android:text="TextViewDescription"
+                android:textColor="#000000" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

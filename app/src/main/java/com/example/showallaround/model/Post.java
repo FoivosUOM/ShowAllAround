@@ -17,10 +17,10 @@ public class Post {
         this.likes_count = likes_count;
     }
 
-    public Post(String text, String id) {
+    public Post(String text, String media_url) {
         this.text = text;
-        this.id = id;
-        this.media_url = "";
+        this.id = "";
+        this.media_url = media_url;
         this.comments_count = 0;
         this.likes_count = 0;
     }
