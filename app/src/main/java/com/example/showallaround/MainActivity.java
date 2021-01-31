@@ -15,6 +15,9 @@ import android.widget.EditText;
 
 import com.example.showallaround.adapter.HashtagListAdapter;
 import com.example.showallaround.model.Hashtag;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.HttpMethod;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -36,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Hashtag> listOfHashtags;
     private EditText searchInput;
     private Button searchButton;
+    private Button postPosts;
+    AccessToken accessToken;
+    private String mediURL = "https://scontent.cdninstagram.com/v/t51.29350-15/140055099_422290969204646_8686483779202404896_n.jpg?_nc_cat=108&ccb=2&_nc_sid=8ae9d6&_nc_ohc=vQkRDnj6F6sAX_p34SK&_nc_ht=scontent.cdninstagram.com&oh=50e0d34ec7dc4e82d2b2a5260295224f&oe=603B2234";
+
 
     private RecyclerView recyclerView;
     private HashtagListAdapter newAdapter;
@@ -80,8 +87,36 @@ public class MainActivity extends AppCompatActivity {
                 getSearchedHashtags(query);
 
         };
+        View.OnClickListener postListener = view -> {
+
+//            GraphRequest thirdRequest = new GraphRequest(accessToken,
+//                    "/17841445094323791/media" +
+//                    "  ?image_url="+mediURL +
+//                    "  &caption=#BronzFonz", null, HttpMethod.POST, thirdResponse -> {
+//
+//
+//                System.out.println(thirdResponse);
+////                try {
+////                    String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
+////                    getPostsFromIGHashtagId(ig_hashtagId, user_id);
+////                } catch (JSONException e) {
+////                    e.printStackTrace();
+////                }
+//            });
+//
+////            Bundle parameters = new Bundle();
+////            parameters.putString("user_id", user_id);
+////            parameters.putString("q", hashtag);
+////            thirdRequest.setParameters(parameters);
+//            thirdRequest.executeAsync();
+
+        };
 
         searchButton.setOnClickListener(listener);
+
+
+        postPosts = findViewById(R.id.button2);
+        postPosts.setOnClickListener(postListener);
 
     }
 
@@ -222,4 +257,5 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 }

@@ -9,8 +9,8 @@ public class Post {
     private int likes_count;
     private boolean origin;
 
-    public String isOrigin() {
-        return origin? "Instagram" : "Twitter";
+    public boolean isOrigin() {
+        return origin;
     }
 
     public void setOrigin(boolean origin) {

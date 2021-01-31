@@ -37,16 +37,16 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.PostLi
         TextView textViewText;
         TextView textViewComments;
         TextView textViewLikes;
-        TextView textViewOrigin;
         ImageView imagePost;
+        ImageView imageViewOrigin;
         public PostListViewHolder(@NonNull View itemView, HashtagListAdapter.OnItemClickListener listener) {
             super(itemView);
 
             textViewText = itemView.findViewById(R.id.textViewPostText);
             textViewComments = itemView.findViewById(R.id.textViewComments);
             textViewLikes = itemView.findViewById(R.id.textViewLikes);
-            textViewOrigin = itemView.findViewById(R.id.textViewOrigin);
             imagePost = itemView.findViewById(R.id.imageViewPostImage);
+            imageViewOrigin =  itemView.findViewById(R.id.imageViewOrigin);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -80,7 +80,13 @@ public class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.PostLi
         holder.textViewText.setText(posts.get(position).getText());
         holder.textViewComments.setText(posts.get(position).getComments_count());
         holder.textViewLikes.setText(posts.get(position).getLikes_count());
-        holder.textViewOrigin.setText(posts.get(position).isOrigin());
+        if(posts.get(position).isOrigin()){
+            holder.imageViewOrigin.setImageResource(R.drawable.ic_instagram);
+        }
+        else{
+            holder.imageViewOrigin.setImageResource(R.drawable.ic_twitter);
+        }
+
         Picasso.get().load(posts.get(position).getMedia_url()).into(holder.imagePost);
     }
 

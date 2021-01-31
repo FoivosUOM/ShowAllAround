@@ -59,7 +59,7 @@ public class PostsActivity extends AppCompatActivity {
     private ArrayList<Post> listOfPostsFromIG;
     private ArrayList<Post> listOfPostsFromTwitter;
 
-    private LoadingDialog loadingDialog = new LoadingDialog(PostsActivity.this);
+    private LoadingDialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +74,7 @@ public class PostsActivity extends AppCompatActivity {
         twitterCompleted = false;
         count = 25;
 
+        loadingDialog = new LoadingDialog(PostsActivity.this);
         loadingDialog.startLoadingDialog();
         accessToken = AccessToken.getCurrentAccessToken();
         facebookUserId = intent.getStringExtra("userId");
@@ -91,6 +92,11 @@ public class PostsActivity extends AppCompatActivity {
             listOfPosts.get(position);
             Intent intentToSinglePost = new Intent(PostsActivity.this, SinglePostActivity.class);
             intentToSinglePost.putExtra("id",listOfPosts.get(position).getId());
+            intentToSinglePost.putExtra("text",listOfPosts.get(position).getText());
+            intentToSinglePost.putExtra("media_url",listOfPosts.get(position).getMedia_url());
+            intentToSinglePost.putExtra("comments_count",listOfPosts.get(position).getComments_count());
+            intentToSinglePost.putExtra("ilikes_countd",listOfPosts.get(position).getLikes_count());
+            intentToSinglePost.putExtra("origin",listOfPosts.get(position).isOrigin());
 
             startActivity(intentToSinglePost);
         });
@@ -151,7 +157,7 @@ public class PostsActivity extends AppCompatActivity {
 
     private void getPostsFromIGHashtagId(String ig_hashtagId, String user_id) {
         ArrayList<Post> list = new ArrayList<>();
-        GraphRequest thirdRequest = new GraphRequest(accessToken, "/" + ig_hashtagId + "/top_media", null, HttpMethod.GET, thirdResponse -> {
+        GraphRequest thirdRequest = new GraphRequest(accessToken, "/" + ig_hashtagId + "/recent_media", null, HttpMethod.GET, thirdResponse -> {
 
             try {
                 for (int i = 0; i < thirdResponse.getJSONObject().getJSONArray("data").length(); i++) {
@@ -168,7 +174,14 @@ public class PostsActivity extends AppCompatActivity {
                                     true);
                             list.add(post);
                         } else {
-                            Post post = new Post(newPost.getString("caption"), mediURL);
+//                            Post post = new Post(newPost.getString("caption"), mediURL);
+                            Post post = new Post(
+                                    newPost.getString("id"),
+                                    newPost.getString("caption"),
+                                    newPost.getString(mediURL),
+                                    newPost.getInt("comments_count"),
+                                    newPost.getInt("like_count"),
+                                    true);
                             list.add(post);
                         }
                     } catch (JSONException e) {
@@ -235,9 +248,16 @@ public class PostsActivity extends AppCompatActivity {
 
                 listOfPostsFromTwitter.clear();
                 listOfPostsFromTwitter.addAll(list);
-                for (int i = 0; i < count; i++) {
+                Log.i("length", String.valueOf(listOfPostsFromIG.size()));
+                Log.i("length", String.valueOf(listOfPostsFromTwitter.size()));
+                int i;
+                for (i = 0; i < listOfPostsFromIG.size(); i++) {
                     listOfPosts.add(listOfPostsFromTwitter.get(i));
                     listOfPosts.add(listOfPostsFromIG.get(i));
+
+                }
+                for (int j = i; j < listOfPostsFromTwitter.size(); j++) {
+                    listOfPosts.add(listOfPostsFromTwitter.get(j));
                 }
                 loadingDialog.dismissDialog();
                 runOnUiThread(() -> newAdapter.notifyDataSetChanged());
