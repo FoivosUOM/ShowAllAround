@@ -23,12 +23,12 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class CreatePostActivity extends AppCompatActivity {
 
-    Button  postBtn;
+    Button postBtn;
     private EditText editTextTweet;
-    static final String CONSUMER_KEY = "ND7a3dO7kF6VpV7LNVgVsJ3zx";
-    static final String CONSUMER_SECRET = "xH7ZMmZgtzPjiPNCu1TgNjtjXV8QK9L5T16g5lRDiWrpcfJzQ2";
-    static final String ACCESS_TOKEN = "779768016775118848-yudzRRp9k8pYFhHJIGcubQD6H17BXhN";
-    static final String ACCESS_TOKEN_SECRET = "wOyh45qmA1JV4yZlmNCDtMgubiDjzB6F44TYW8TR0uqc5";
+    private String CONSUMER_KEY;
+    private String CONSUMER_SECRET;
+    private String ACCESS_TOKEN;
+    private String ACCESS_TOKEN_SECRET;
     private LoadingDialog loadingDialog;
 
 
@@ -42,6 +42,10 @@ public class CreatePostActivity extends AppCompatActivity {
         loadingDialog = new LoadingDialog(CreatePostActivity.this);
         setTitle("Create Tweet");
 
+        CONSUMER_KEY = getString(R.string.twitter_consumerKey);
+        CONSUMER_SECRET = getString(R.string.twitter_consumerSecret);
+        ACCESS_TOKEN = getString(R.string.twitter_accessToken);
+        ACCESS_TOKEN_SECRET = getString(R.string.twitter_accessTokenSecret);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -79,6 +83,7 @@ public class CreatePostActivity extends AppCompatActivity {
         Status status = twitter.updateStatus(tweet);
         System.out.println("Successfully updated the status to [" + status.getText() + "].");
 
+        editTextTweet.setText("");
         loadingDialog.dismissDialog();
 
     }

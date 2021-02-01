@@ -5,10 +5,10 @@
     <!--    <string name="fb_login_protocol_scheme">fb14668</string>-->
     <string name="fb_login_protocol_scheme">fb374515670479024</string>
 
-    <string name="twitter.consumerKey">Y7kYos3BJWjKxrM3qDhp9gnaO</string>
-    <string name="twitter.consumerSecret">fJlxJdfQUXGgiZVqDFBLjNUZdtDerax2KVdPB9xpl2KvLui6w7</string>
-    <string name="twitter.accessToken">779768016775118848-36eYa7kmilUsrW9XIPg7TnJwePdCNbs</string>
-    <string name="twitter.accessTokenSecret">l6DBYqSNxLDa2Fbn2MUaMklfojXMy8Nn4metFAM8DpvKQ</string>
+    <string name="twitter.consumerKey">ND7a3dO7kF6VpV7LNVgVsJ3zx</string>
+    <string name="twitter.consumerSecret">xH7ZMmZgtzPjiPNCu1TgNjtjXV8QK9L5T16g5lRDiWrpcfJzQ2</string>
+    <string name="twitter.accessToken">779768016775118848-yudzRRp9k8pYFhHJIGcubQD6H17BXhN</string>
+    <string name="twitter.accessTokenSecret">wOyh45qmA1JV4yZlmNCDtMgubiDjzB6F44TYW8TR0uqc5</string>
     <string name="twitter.bearertoken">AAAAAAAAAAAAAAAAAAAAAD3AKAEAAAAAV3xZZLIYkaesgkScsx2Z%2FmSkU2E%3Dxz9aLeMPflWFeL48EewvTjbO3skw7FUbzzUGyxBhzoq2YXsJFg</string>
     <string name="twitter.image">https://lh3.googleusercontent.com/proxy/tm4Wdemh9TgOPjXR1yJZBbRhF17d8HrT1e5_Nwq6adacNHdSeej3Q4FmSncJzn1PEcE44EsBgxBJkBYruuTqbkcn_9IugmSXFjR0dzL7622T8Ty8LU-4qer1rKS5_vO-ny_aEbtoU7qoCIVTyoUsiQ</string>
     <string name="instagram.image">https://lh3.googleusercontent.com/proxy/Macfyau6HY0uct8_pFIzyqZsLVhfwvochxuI0CmW-pwf4D4EClh5TCtf5JBguuZUpnuTbf_wwDVYFrGESGnF69JgSrpCA7ELnEAZIwcgIFWGWY9rryCPftcjAufudf9uLNP9bvFM_X_8uV8</string>
