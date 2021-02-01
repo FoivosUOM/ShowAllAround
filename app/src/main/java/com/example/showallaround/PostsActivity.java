@@ -39,8 +39,10 @@ public class PostsActivity extends AppCompatActivity {
     private Boolean igCompleted;
     private Boolean twitterCompleted;
     private int count;
-    private String mediURL = "https://scontent.cdninstagram.com/v/t51.29350-15/140055099_422290969204646_8686483779202404896_n.jpg?_nc_cat=108&ccb=2&_nc_sid=8ae9d6&_nc_ohc=vQkRDnj6F6sAX_p34SK&_nc_ht=scontent.cdninstagram.com&oh=50e0d34ec7dc4e82d2b2a5260295224f&oe=603B2234";
+//    private String mediURL = "https://lh3.googleusercontent.com/proxy/tm4Wdemh9TgOPjXR1yJZBbRhF17d8HrT1e5_Nwq6adacNHdSeej3Q4FmSncJzn1PEcE44EsBgxBJkBYruuTqbkcn_9IugmSXFjR0dzL7622T8Ty8LU-4qer1rKS5_vO-ny_aEbtoU7qoCIVTyoUsiQ";
 
+    private String mediURL;
+    private String mediaIGURL;
     private ArrayList<Post> listOfPosts;
     private ArrayList<Post> listOfPostsFromIG;
     private ArrayList<Post> listOfPostsFromTwitter;
@@ -52,6 +54,8 @@ public class PostsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posts_activity);
 
+        mediURL = getString(R.string.twitter_image);
+        mediaIGURL = getString(R.string.instagram_image);
         Intent intent = getIntent();
         listOfPosts = new ArrayList<>();
         listOfPostsFromIG = new ArrayList<>();
@@ -170,11 +174,10 @@ public class PostsActivity extends AppCompatActivity {
                                     true);
                             list.add(post);
                         } else {
-//                            Post post = new Post(newPost.getString("caption"), mediURL);
                             Post post = new Post(
                                     newPost.getString("id"),
                                     newPost.getString("caption"),
-                                    newPost.getString(mediURL),
+                                    newPost.getString(mediaIGURL),
                                     newPost.getInt("comments_count"),
                                     newPost.getInt("like_count"),
                                     true);

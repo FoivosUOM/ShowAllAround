@@ -40,6 +40,7 @@ public class CreatePostActivity extends AppCompatActivity {
         postBtn = findViewById(R.id.btnPost);
         editTextTweet = findViewById(R.id.editTextTextPersonName);
         loadingDialog = new LoadingDialog(CreatePostActivity.this);
+        setTitle("Create Tweet");
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
@@ -62,7 +63,6 @@ public class CreatePostActivity extends AppCompatActivity {
 
 
     private void showHomeTimeline(String tweet) throws TwitterException {
-
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         builder.setOAuthConsumerKey(CONSUMER_KEY);
