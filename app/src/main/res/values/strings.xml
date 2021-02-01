@@ -12,4 +12,6 @@
     <string name="twitter.bearertoken">AAAAAAAAAAAAAAAAAAAAAD3AKAEAAAAAV3xZZLIYkaesgkScsx2Z%2FmSkU2E%3Dxz9aLeMPflWFeL48EewvTjbO3skw7FUbzzUGyxBhzoq2YXsJFg</string>
 
     <string name="twitter.londonId">44418</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.example.showallaround.adapter.HashtagListAdapter;
 import com.example.showallaround.model.Hashtag;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private String getTwitterBearerToken = "";
     private ArrayList<Hashtag> listOfHashtags;
     private EditText searchInput;
-    private Button searchButton;
+    private ImageView searchButton;
     private Button postPosts;
     AccessToken accessToken;
     private String mediURL = "https://scontent.cdninstagram.com/v/t51.29350-15/140055099_422290969204646_8686483779202404896_n.jpg?_nc_cat=108&ccb=2&_nc_sid=8ae9d6&_nc_ohc=vQkRDnj6F6sAX_p34SK&_nc_ht=scontent.cdninstagram.com&oh=50e0d34ec7dc4e82d2b2a5260295224f&oe=603B2234";
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         getTwitterBearerToken = getString(R.string.twitter_bearertoken);
 
         searchInput = findViewById(R.id.editTextTextSearchHashtags);
-        searchButton = findViewById(R.id.buttonSearch);
+        searchButton = findViewById(R.id.imageBtnSearch);
         loadingDialog.startLoadingDialog();
 
         listOfHashtags = new ArrayList<>();
@@ -87,36 +88,9 @@ public class MainActivity extends AppCompatActivity {
                 getSearchedHashtags(query);
 
         };
-        View.OnClickListener postListener = view -> {
-
-//            GraphRequest thirdRequest = new GraphRequest(accessToken,
-//                    "/17841445094323791/media" +
-//                    "  ?image_url="+mediURL +
-//                    "  &caption=#BronzFonz", null, HttpMethod.POST, thirdResponse -> {
-//
-//
-//                System.out.println(thirdResponse);
-////                try {
-////                    String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
-////                    getPostsFromIGHashtagId(ig_hashtagId, user_id);
-////                } catch (JSONException e) {
-////                    e.printStackTrace();
-////                }
-//            });
-//
-////            Bundle parameters = new Bundle();
-////            parameters.putString("user_id", user_id);
-////            parameters.putString("q", hashtag);
-////            thirdRequest.setParameters(parameters);
-//            thirdRequest.executeAsync();
-
-        };
 
         searchButton.setOnClickListener(listener);
 
-
-        postPosts = findViewById(R.id.button2);
-        postPosts.setOnClickListener(postListener);
 
     }
 
@@ -149,16 +123,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
                 JSONArray listOfTrendHastags = null;
-                JSONObject trendingHashtag;
+                String trendingHashtag;
                 ArrayList<Hashtag> list = new ArrayList<Hashtag>();
                 try {
                     listOfTrendHastags = new JSONArray(response.body().string()).getJSONObject(0).getJSONArray("trends");
-//                    Log.i("response", "" + listOfTrendHastags.length());
                     for (int i = 0; i < listOfTrendHastags.length(); i++) {
                         try {
-                            trendingHashtag = listOfTrendHastags.getJSONObject(i);
-                            Hashtag hashtag = new Hashtag(trendingHashtag.getString("name"), trendingHashtag.getString("query"));
-                            list.add(hashtag);
+                            trendingHashtag = listOfTrendHastags.getJSONObject(i).getString("name");
+                            if(String.valueOf(trendingHashtag.charAt(0)).equals("#")){
+                                list.add(new Hashtag(trendingHashtag.substring(1)));
+                            }else{
+                                list.add(new Hashtag(trendingHashtag));
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -166,15 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     loadingDialog.dismissDialog();
                     listOfHashtags.clear();
                     listOfHashtags.addAll(list);
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-
-                            newAdapter.notifyDataSetChanged();
-
-                        }
-                    });
+                    runOnUiThread(() -> newAdapter.notifyDataSetChanged());
 
 
                 } catch (JSONException e) {

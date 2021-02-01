@@ -29,12 +29,10 @@ public class HashtagListAdapter extends RecyclerView.Adapter<HashtagListAdapter.
 
     public static class HashtagListViewHolder extends RecyclerView.ViewHolder{
         public TextView title;
-        public TextView query;
 
         public HashtagListViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
             title = itemView.findViewById(R.id.textViewHeadingTitle);
-            query = itemView.findViewById(R.id.textViewHashtagQuery);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -67,7 +65,6 @@ public class HashtagListAdapter extends RecyclerView.Adapter<HashtagListAdapter.
     public void onBindViewHolder(@NonNull HashtagListViewHolder holder, int position) {
         Hashtag hashtag = list.get(position);
         holder.title.setText(hashtag.getName());
-        holder.query.setText(hashtag.getQuery());
     }
 
 

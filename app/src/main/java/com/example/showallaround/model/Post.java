@@ -12,6 +12,9 @@ public class Post {
     public boolean isOrigin() {
         return origin;
     }
+    public String originString() {
+        return origin?"IG":"Twitter";
+    }
 
     public void setOrigin(boolean origin) {
         this.origin = origin;

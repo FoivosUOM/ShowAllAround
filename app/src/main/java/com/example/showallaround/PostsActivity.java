@@ -65,7 +65,7 @@ public class PostsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posts_activity);
-        setTitle("Posts from IG/TWITTER");
+
         Intent intent = getIntent();
         listOfPosts = new ArrayList<>();
         listOfPostsFromIG = new ArrayList<>();
@@ -78,7 +78,9 @@ public class PostsActivity extends AppCompatActivity {
         loadingDialog.startLoadingDialog();
         accessToken = AccessToken.getCurrentAccessToken();
         facebookUserId = intent.getStringExtra("userId");
-        hashtag = intent.getStringExtra("hahstag");
+        String tempHashahtag= intent.getStringExtra("hahstag");
+        hashtag = tempHashahtag.replaceAll("\\s+","");
+        setTitle("Posts for #"+hashtag);
         Log.i("hashtag", hashtag);
 
 
@@ -95,8 +97,9 @@ public class PostsActivity extends AppCompatActivity {
             intentToSinglePost.putExtra("text",listOfPosts.get(position).getText());
             intentToSinglePost.putExtra("media_url",listOfPosts.get(position).getMedia_url());
             intentToSinglePost.putExtra("comments_count",listOfPosts.get(position).getComments_count());
-            intentToSinglePost.putExtra("ilikes_countd",listOfPosts.get(position).getLikes_count());
-            intentToSinglePost.putExtra("origin",listOfPosts.get(position).isOrigin());
+            intentToSinglePost.putExtra("likes_countd",listOfPosts.get(position).getLikes_count());
+            intentToSinglePost.putExtra("origin",listOfPosts.get(position).originString());
+            intentToSinglePost.putExtra("hashtag",hashtag);
 
             startActivity(intentToSinglePost);
         });
@@ -140,12 +143,19 @@ public class PostsActivity extends AppCompatActivity {
     private void getIGHashtagID(String user_id) {
         GraphRequest thirdRequest = new GraphRequest(accessToken, "/ig_hashtag_search", null, HttpMethod.GET, thirdResponse -> {
 
+            Log.i("error",thirdResponse.toString());
             try {
-                String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
-                getPostsFromIGHashtagId(ig_hashtagId, user_id);
+                if(!thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).has("id")){
+                    listOfPostsFromIG.clear();
+                    searchOnTwitterByHashtag(hashtag);
+                }else{
+                    String ig_hashtagId = thirdResponse.getJSONObject().getJSONArray("data").getJSONObject(0).getString("id");
+                    getPostsFromIGHashtagId(ig_hashtagId, user_id);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
         });
 
         Bundle parameters = new Bundle();

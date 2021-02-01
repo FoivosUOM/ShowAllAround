@@ -8,6 +8,9 @@ public class Hashtag {
         this.name = name;
         this.query = query;
     }
+    public Hashtag(String name) {
+        this.name = name;
+    }
 
     public String getName() {
         return name;
